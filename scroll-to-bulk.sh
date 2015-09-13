@@ -10,13 +10,14 @@ URL=$1
 if [ x$1 == x"" ]; then
 	show_usage
 fi
-BASE_URL=$(echo $URL | grep -o '[htps]*://[^/]*')
+BASE_URL=$(echo $URL | grep -o --color=never '[htps]*://[^/]*')
 
 SCROLL_TIME=1m
-OPTIONS="-k -v"
+OPTIONS="-k -v -g"
 
 mkdir data
-curl -k ${URL}/_search?_search_type=scan\&scroll=${SCROLL_TIME} -d '{"query":{"match_all":{}},"size":100}' > out.json
+echo curl --noproxy ksekrfuat.tranzrail.co.nz ${OPTIONS} -XPOST "${URL}/_search?_search_type=scan&scroll=${SCROLL_TIME}" -d '{"query":{"match_all":{}},"size":100}'
+curl --noproxy "*" ${OPTIONS} "${URL}/_search?_search_type=scan&scroll=${SCROLL_TIME}" -d '{"query":{"match_all":{}},"size":100}' > out.json
 
 count=0
 while $(true)
@@ -30,6 +31,7 @@ do
 		rm ${BULK}
 		break
 	fi
-	curl ${OPTIONS} ${BASE_URL}/_search/scroll?scroll=${SCROLL_TIME} -d $scroll_id > out.json
+	echo curl --noproxy ksekrfuat.tranzrail.co.nz ${OPTIONS} -XPOST "${BASE_URL}/_search/scroll?scroll=${SCROLL_TIME}" -d "$scroll_id"
+	curl --noproxy "*" ${OPTIONS} "${BASE_URL}/_search/scroll?scroll=${SCROLL_TIME}" -d "$scroll_id" > out.json
 done
 
